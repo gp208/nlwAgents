@@ -1,9 +1,14 @@
-import { Button } from './components/ui/button';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { CreateRoom } from './pages/createRoom';
+import { Room } from './pages/room';
 
 export function App() {
   return (
-    <div>
-      <Button>Hello world</Button>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route index element={<CreateRoom/>} />
+        <Route path='/room' element={<Room/>} />
+      </Routes>
+    </BrowserRouter>
   )
 }
