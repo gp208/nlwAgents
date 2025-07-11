@@ -1,0 +1,65 @@
+import {useForm} from 'react-hook-form'
+import {z} from 'zod'
+import {zodResolver} from '@hookform/resolvers/zod'
+import {Button} from './ui/button'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from './ui/card'
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from './ui/form'
+import {Input} from './ui/input'
+import {Textarea} from './ui/textarea'
+
+const createRoomSchema = z.object({
+  name: z.string().min(3, {message: 'Use ao menos 3 caracteres.'}),
+  description: z.string()
+})
+
+type CreateRoomFormData = z.infer<typeof createRoomSchema>
+
+export function CreateRoomForm() {
+  const createRoomForm = useForm<CreateRoomFormData>({
+    resolver: zodResolver(createRoomSchema),
+    defaultValues: {
+      name: '',
+      description: ''
+    }
+  })
+
+  function handleRoomCreation(data: CreateRoomFormData) {
+    console.log(data)
+  }
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Criar sala</CardTitle>
+        <CardDescription>Crie uma nova sala para fazer perguntas e receber respostas da IA.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...createRoomForm}>
+          <form onSubmit={createRoomForm.handleSubmit(handleRoomCreation)} className='flex flex-col gap-4'>
+            <FormField control={createRoomForm.control} name='name' render={({field}) => {
+              return (
+                <FormItem>
+                  <FormLabel>Nome da sala</FormLabel>
+                  <FormControl><Input {...field} placeholder='Digite o nome da sala'/></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}}
+            />
+
+            <FormField control={createRoomForm.control} name='description' render={({field}) => {
+              return (
+                <FormItem>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl><Textarea {...field}/></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}}
+            />
+
+            <Button type='submit' className='w-full'>Criar sala</Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  )
+}
