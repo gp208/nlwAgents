@@ -6,6 +6,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from './ui/ca
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from './ui/form'
 import {Input} from './ui/input'
 import {Textarea} from './ui/textarea'
+import {useCreateRoom} from '@/http/useCreateRoom'
 
 const createRoomSchema = z.object({
   name: z.string().min(3, {message: 'Use ao menos 3 caracteres.'}),
@@ -15,6 +16,8 @@ const createRoomSchema = z.object({
 type CreateRoomFormData = z.infer<typeof createRoomSchema>
 
 export function CreateRoomForm() {
+  const {mutateAsync: createRoom} = useCreateRoom()
+
   const createRoomForm = useForm<CreateRoomFormData>({
     resolver: zodResolver(createRoomSchema),
     defaultValues: {
@@ -23,8 +26,9 @@ export function CreateRoomForm() {
     }
   })
 
-  function handleRoomCreation(data: CreateRoomFormData) {
-    console.log(data)
+  async function handleRoomCreation({name, description}: CreateRoomFormData) {
+    await createRoom({name, description})
+    createRoomForm.reset()
   }
   
   return (
