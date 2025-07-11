@@ -2,6 +2,7 @@ import {fastify} from 'fastify'
 import {serializerCompiler, validatorCompiler, type ZodTypeProvider} from 'fastify-type-provider-zod'
 import {fastifyCors} from '@fastify/cors'
 import {env} from './env.ts'
+import {createRoomRoute} from './http/routes/createRoom.ts'
 import {getRoomsRoute} from './http/routes/getRooms.ts'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
@@ -13,6 +14,7 @@ app.setValidatorCompiler(validatorCompiler)
 
 app.get('/health', () => {return 'OK'})
 
+app.register(createRoomRoute)
 app.register(getRoomsRoute)
 
 app.listen({port: env.PORT})
