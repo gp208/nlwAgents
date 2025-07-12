@@ -10,10 +10,7 @@ type RoomParams = {
 
 export function Room() {
   const params = useParams<RoomParams>()
-
-  if (!params.roomId) {
-    return <Navigate replace to="/" />
-  }
+  if (!params.roomId) return <Navigate replace to="/" />
 
   return (
     <div className="min-h-screen bg-zinc-950">

@@ -15,6 +15,13 @@
       "when": 1752193517048,
       "tag": "0001_skinny_sprite",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1752356649991,
+      "tag": "0002_chemical_wallop",
+      "breakpoints": true
     }
   ]
 }
