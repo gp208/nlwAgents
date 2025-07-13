@@ -12,14 +12,15 @@ type RoomParams = {
 
 export function RecordAudio() {
   const params = useParams<RoomParams>()
-
   const [isRecording, setIsRecording] = useState(false)
   const recorder = useRef<MediaRecorder | null>(null)
+  const intervalRef = useRef<NodeJS.Timeout>(null)
 
   function stopRecording() {
     setIsRecording(false)
     if(recorder.current && recorder?.current.state != 'inactive')
       recorder.current.stop()
+    if(intervalRef.current) clearInterval(intervalRef.current)
   }
 
   async function uploadAudio(audio: Blob) {
@@ -31,6 +32,18 @@ export function RecordAudio() {
     })
     const result = await response.json()
     console.log(result)
+  }
+
+  function createRecorder(audio: MediaStream) {
+    recorder.current = new MediaRecorder(audio, {
+      mimeType: 'audio/webm',
+      audioBitsPerSecond: 64_000
+    })
+
+    recorder.current.ondataavailable = event => {if(event.data.size > 0) uploadAudio(event.data)}
+    recorder.current.onstart = () => {console.log('Gravação iniciada.')}
+    recorder.current.onstop = () => {console.log('Gravação encerrada.')}
+    recorder.current.start()
   }
 
   async function startRecording() {
@@ -46,15 +59,11 @@ export function RecordAudio() {
       sampleRate: 44_100
     }})
 
-    recorder.current = new MediaRecorder(audio, {
-      mimeType: 'audio/webm',
-      audioBitsPerSecond: 64_000
-    })
-
-    recorder.current.ondataavailable = event => {if(event.data.size > 0) uploadAudio(event.data)}
-    recorder.current.onstart = () => {console.log('Gravação iniciada.')}
-    recorder.current.onstop = () => {console.log('Gravação encerrada.')}
-    recorder.current.start()
+    createRecorder(audio)
+    intervalRef.current = setInterval(() => {
+      recorder.current?.stop()
+      createRecorder(audio)
+    }, 5000)
   }
   
   if (!params.roomId) return <Navigate replace to="/" />
