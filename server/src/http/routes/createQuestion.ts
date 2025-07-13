@@ -2,7 +2,7 @@ import {and, eq, sql} from 'drizzle-orm'
 import {z} from 'zod'
 import type {FastifyPluginCallbackZod} from 'fastify-type-provider-zod'
 import {db} from '../../db/connection.ts'
-import {generateEmbeddings} from '../../services/gemini.ts'
+import {generateAnswer, generateEmbeddings} from '../../services/gemini.ts'
 import {schema} from '../../db/schema/index.ts'
 
 export const createQuestionRoute: FastifyPluginCallbackZod = (app) => {
@@ -34,10 +34,17 @@ export const createQuestionRoute: FastifyPluginCallbackZod = (app) => {
         .orderBy(sql`${schema.audioChunks.embeddings} <=> ${embeddingsAsString}::vector`)
         .limit(3)
       
-      return chunks
+      let answer: string | null = null
+      if(chunks.length > 0) {
+        const transcriptions = chunks.map(chunk => chunk.transcription)
+        answer = await generateAnswer(question, transcriptions)
+      }
 
-      /* const result = await db.insert(schema.questions).values({roomId, question}).returning()
+      const result = await db.insert(schema.questions).values({roomId, question, answer}).returning()
       if (!result[0]) throw new Error('Failed to create new question.')
-      return reply.status(201).send({questionId: result[0].id}) */
+      return reply.status(201).send({
+        questionId: result[0].id,
+        answer
+      })
     })
 }
