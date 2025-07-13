@@ -1,5 +1,7 @@
 import {z} from 'zod'
 import type {FastifyPluginCallbackZod} from 'fastify-type-provider-zod'
+import {db} from '../../db/connection.ts'
+import {schema} from '../../db/schema/index.ts'
 import {generateEmbeddings, transcribeAudio} from '../../services/gemini.ts'
 
 export const uploadAudioRoute: FastifyPluginCallbackZod = (app) => {
@@ -18,6 +20,9 @@ export const uploadAudioRoute: FastifyPluginCallbackZod = (app) => {
       const transcription = await transcribeAudio(audioAsBase64, audio.mimetype)
       const embeddings = await generateEmbeddings(transcription)
 
-      return {transcription, embeddings}
+      const result = await db.insert(schema.audioChunks).values({roomId, transcription, embeddings}).returning()
+      if(!result[0]) throw new Error('Erro ao salvar trecho de áudio.')
+
+      return reply.status(201).send({chunkId: result[0].id})
     })
 }
