@@ -1,6 +1,6 @@
 import {z} from 'zod'
 import type {FastifyPluginCallbackZod} from 'fastify-type-provider-zod'
-import {transcribeAudio} from '../../services/gemini.ts'
+import {generateEmbeddings, transcribeAudio} from '../../services/gemini.ts'
 
 export const uploadAudioRoute: FastifyPluginCallbackZod = (app) => {
   app.post(
@@ -16,7 +16,8 @@ export const uploadAudioRoute: FastifyPluginCallbackZod = (app) => {
       const audioBuffer = await audio.toBuffer()
       const audioAsBase64 = audioBuffer.toString('base64')
       const transcription = await transcribeAudio(audioAsBase64, audio.mimetype)
+      const embeddings = await generateEmbeddings(transcription)
 
-      return {transcription}
+      return {transcription, embeddings}
     })
 }
